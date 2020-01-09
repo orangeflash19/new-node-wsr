@@ -99,7 +99,7 @@ app.post('/witness', (req, res) => {
     console.log(req.body.password);
     console.log(witpass);
     res.render('videopage', {
-      msg: 'Welcome to WSR witness'
+      msg: 'Welcome witness'
     });
   }
 

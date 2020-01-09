@@ -10,11 +10,11 @@ body{
   background: rgba(0, 0, 0, 0.5);
   display: inline-block;
   margin-top: 15px;
-  margin-left: 25%;
+  margin-left: 15%;
 }
 .video-page-holder .video-wrap{
-  width: 650px;
-  height: 380px;
+  width: 800px;
+  height: 480px;
   position: relative;
 }
 .video-wrap video{
