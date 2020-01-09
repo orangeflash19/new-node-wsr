@@ -6,11 +6,14 @@ const session = require('express-session');
 const bodyParser = require('body-parser');
 const nodemailer = require('nodemailer');
 const path = require('path');
-const fs = require('fs')
+const fs = require('fs');
+const port = process.env.PORT || 3000;
 var msg;
 var witpass;
 const app = express();
-const port = process.env.PORT || 3000;
+const http = require('http').Server(app);
+const io = require('socket.io')(http);
+
 
 // Static folder
 app.use('/public', express.static(path.join(__dirname, 'public')));
@@ -22,7 +25,9 @@ app.engine('handlebars', exphbs({
 app.set('view engine', 'handlebars');
 
 //Body Parser Middleware
-app.use(bodyParser.urlencoded( { extended: false } ) );
+app.use(bodyParser.urlencoded({
+  extended: false
+}));
 app.use(bodyParser.json());
 
 //method override Middleware
@@ -46,6 +51,8 @@ app.use(function(req, res, next) {
   res.locals.error = req.flash('error');
   next();
 });
+
+
 
 //Index or homepage route
 app.get('/', (req, res) => {
@@ -74,7 +81,7 @@ app.get('/login/admin', (req, res) => {
 app.post('/login', (req, res) => {
   const user = 'admin';
   const pass = 'admin123';
-  if(req.body.username == user && req.body.password == pass){
+  if (req.body.username == user && req.body.password == pass) {
     console.log('admin successfully logged in...');
     res.render('adminpanel');
   }
@@ -82,19 +89,19 @@ app.post('/login', (req, res) => {
 
 //Process witness login form
 app.post('/witness', (req, res) => {
-      fs.readFile('Output.txt', (err, data) => {
-       if (err) throw err;
-       console.log(data);
-       witpass = data;
+  fs.readFile('Output.txt', (err, data) => {
+    if (err) throw err;
+    console.log(data);
+    witpass = data;
+  });
+  if (req.body.password == witpass) {
+    console.log('witness successfully logged in...');
+    console.log(req.body.password);
+    console.log(witpass);
+    res.render('videopage', {
+      msg: 'Welcome to WSR witness'
     });
-    if(req.body.password == witpass ){
-      console.log('witness successfully logged in...');
-      console.log(req.body.password);
-      console.log(witpass);
-      res.render('videopage', { msg: 'Welcome to WSR witpass' });
-    }
-
-
+  }
 
 });
 
@@ -106,6 +113,43 @@ app.get('/adminpanel', (req, res) => {
 //videopage form
 app.get('/videopage', (req, res) => {
   res.render('videopage');
+
+  ///////////video call part//////////////
+  let clients = 0;
+  io.on('connection', function(socket) {
+    socket.on('NewClient', function() {
+        if(clients < 2){
+          if(clients == 1){
+            this.emit('CreatePeer');
+          }
+        }else {
+          this.emit('SessionActive');
+        }
+        clients++;
+    });
+
+    socket.on('Offer', SendOffer);
+    socket.on('Answer', SendAnswer);
+    socket.on('disconnect', Disconnect);
+
+  });
+
+  function Disconnect() {
+    if(clients > 0){
+      clients--;
+    }
+  }
+
+  function SendOffer(offer) {
+    this.broadcast.emit('BackOffer', offer);
+  }
+
+  function SendAnswer(data) {
+    this.broadcast.emit('BackAnswer', data);
+  }
+
+  ///////////////////////////////////////
+
 });
 
 //credentials form
@@ -118,55 +162,57 @@ app.post('/login/credentials', (req, res) => {
   witpass = req.body.passwordHolder;
 
   // Write data in 'Output.txt' .
-fs.writeFile('Output.txt', witpass, (err) => {
+  fs.writeFile('Output.txt', witpass, (err) => {
     // In case of a error throw err.
     if (err) throw err;
-})
+  })
   const output = `
   <h3> Message </h3>
   <p> ${req.body.passwordHolder} </p>`;
 
-      // create reusable transporter object using the default SMTP transport
-    let transporter = nodemailer.createTransport({
-      service: 'gmail',
-      host: 'smtp.gmail.com',
-      port: 587,
-      secure: false, // true for 465, false for other ports
-      auth: {
-        user: 'rentaros80@gmail.com', // email id of sender
-        pass: 'satomiren' // email password of sender
-      },
-      tls: {
-        rejectUnauthorized: false
-      }
+  // create reusable transporter object using the default SMTP transport
+  let transporter = nodemailer.createTransport({
+    service: 'gmail',
+    host: 'smtp.gmail.com',
+    port: 587,
+    secure: false, // true for 465, false for other ports
+    auth: {
+      user: 'rentaros80@gmail.com', // email id of sender
+      pass: 'satomiren' // email password of sender
+    },
+    tls: {
+      rejectUnauthorized: false
+    }
+  });
+
+  // setup email data with unicode symbols
+  let mailOptions = {
+    from: '"Nodemailer Contact testing" <rentaros80@gmail.com>', // sender address
+    to: req.body.email, // list of receivers
+    subject: "Node witness password", // Subject line
+    text: "something...", // plain text body
+    html: output // html body
+  };
+
+  // send mail with defined transport object
+  transporter.sendMail(mailOptions, (error, info) => {
+    if (error) {
+      return console.log(error);
+    }
+
+    console.log('Message sent: %s', info.messageId);
+    console.log('Preview URL: %s', nodemailer.getTestMessageUrl(info));
+
+
+    res.render('login/credentials', {
+      msg: 'Email has been sent'
     });
-
-    // setup email data with unicode symbols
-      let mailOptions = {
-        from: '"Nodemailer Contact testing" <rentaros80@gmail.com>', // sender address
-        to: req.body.email, // list of receivers
-        subject: "Node witness password", // Subject line
-        text: "something...", // plain text body
-        html: output // html body
-      };
-
-      // send mail with defined transport object
-       transporter.sendMail(mailOptions, (error, info) => {
-           if (error) {
-               return console.log(error);
-           }
-
-           console.log('Message sent: %s', info.messageId);
-            console.log('Preview URL: %s', nodemailer.getTestMessageUrl(info));
-
-
-            res.render('login/credentials', { msg: 'Email has been sent' });
 
   });
 });
 
 
 //starts the server
-app.listen(port, () => {
+http.listen(port, () => {
   console.log(`server started on port ${port}`);
 });
