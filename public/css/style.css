@@ -1,8 +1,9 @@
 body{
-  background-image: url('../img/hitler1.JPG');
+  background-image: url('../img/lap.jpg');
   background-repeat: no-repeat;
   background-attachment: fixed;
   background-size: cover;
+  background-image:
 }
 
 /*Video Page*/
@@ -56,7 +57,7 @@ body{
 }
 /* jumbotron */
 .jumbotron{
-  background-color:#0ffff49e;
+  background-color:#ffc1078c;
 }
 
 

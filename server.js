@@ -96,8 +96,7 @@ app.post('/witness', (req, res) => {
   });
   if (req.body.password == witpass) {
     console.log('witness successfully logged in...');
-    console.log(req.body.password);
-    console.log(witpass);
+
     res.render('videopage', {
       msg: 'Welcome witness'
     });
@@ -137,6 +136,7 @@ app.get('/videopage', (req, res) => {
   function Disconnect() {
     if(clients > 0){
       clients--;
+      this.emit('RemovePeer');
     }
   }
 

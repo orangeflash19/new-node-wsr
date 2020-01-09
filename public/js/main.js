@@ -2,12 +2,16 @@ let Peer = require('simple-peer');
 let socket = io();
 const video = document.querySelector('#smallVideoTag');
 let client = {}
-
+let constraints = {
+  video: {
+    width: 1920,
+    height: 1080,
+    aspectRatio: 1.777777778
+  },
+  audio: true
+};
 //get the stream
-navigator.mediaDevices.getUserMedia({
-    video: true,
-    audio: true
-  })
+navigator.mediaDevices.getUserMedia(constraints)
   .then(stream => {
     socket.emit('NewClient');
     video.srcObject = stream;
@@ -30,6 +34,10 @@ navigator.mediaDevices.getUserMedia({
       });
 
       return peer;
+    }
+
+    function RemovePeer() {
+      document.getElementById('mainVideoTag').remove();
     }
 
     //for peer of type init
@@ -75,6 +83,8 @@ navigator.mediaDevices.getUserMedia({
     socket.on('BackAnswer', SignalAnswer);
     socket.on('SessionActive', SessionActive);
     socket.on('CreatePeer', MakePeer);
+    socket.on('RemovePeer', RemovePeer);
+
 
 
   })
