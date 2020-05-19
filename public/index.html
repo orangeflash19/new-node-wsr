@@ -1,0 +1,55 @@
+<html>
+  <head>
+    <title>Witness Statement Recorder App</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link
+      rel="stylesheet"
+      href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+    />
+
+    <link href="main.css" rel="stylesheet" />
+  </head>
+
+  <body>
+    <h3 class="text-center mb-5">Witness Statement Recorder</h3>
+    <div class="container-fluid mt-5">
+      <div class="row h-90 w-100">
+        <div class="col-12 col-sm-6 d-flex justify-content-center">
+          <div class="embed-responsive embed-responsive-16by9">
+            <video id="courtvideo" class="embed-responsive-item" muted></video>
+          </div>
+        </div>
+
+        <div class="col-12 col-sm-6 d-flex justify-content-center">
+          <div
+            id="peerDiv"
+            class="embed-responsive embed-responsive-16by9"
+          ></div>
+        </div>
+      </div>
+      <div class="row p-2">
+        <div class="col">
+          <button class="btn btn-primary" id="starter">
+            Start Recording <i class="fa fa-play"></i>
+          </button>
+          <button class="btn btn-primary" id="stopper">
+            Stop Recording <i class="fa fa-stop"></i>
+          </button>
+          <button class="btn btn-primary" id="downloader">
+            download <i class="fa fa-download"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+    <!--
+    <h4 class="LC ">Local Camera</h4>
+    <h4 class="RC">Remote Camera</h4> -->
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="adapter.js"></script>
+    <!-- <script src="RecordRTC.js"></script> -->
+    <script src="bundle.js"></script>
+    <script src="RecordRTC.js"></script>
+    <script src="recordVideo.js"></script>
+  </body>
+</html>
